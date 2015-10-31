@@ -16,8 +16,9 @@ def getRecentMediaForTag(hashtag,orgininalMediaFollowerCount, userInfoFileName, 
     config = ConfigParser.ConfigParser()
     config.read('defaults.cfg')
     count = 0
-    next_url = 'https://api.instagram.com/v1/tags/'+hashtag+'/media/recent?access_token='+config.get('UserDetails','access_token')
 
+    next_url = 'https://api.instagram.com/v1/tags/'+hashtag+'/media/recent?access_token='+config.get('UserDetails','access_token')
+    print(colored("Recent media URL::::::::::"+ next_url,"blue"))
     # found = False
     similarMedia = None
     dataForMapping = list()
@@ -160,6 +161,7 @@ if __name__ == "__main__":
             data = readJsonFile(inputDirName, fileName)
             for eachMedia in data:
                 mediaCount +=1
+                count =0
                 originalMediaId = eachMedia["id"]
                 print(colored("????????????STARTED processing media " + str(mediaCount) + "  Media iD: " + str(originalMediaId),'magenta'))
                 mediaTags = eachMedia["tags"]
@@ -167,17 +169,28 @@ if __name__ == "__main__":
                 # print(mediaTags)
                 coocurringTags = filterTags(mediaTags, getFilterList(filterListFileName))
                 coocurringTagsList = list(coocurringTags)
-                if len(coocurringTagsList) <= 0:
+                found=False
+                while found == False:
+                    if len(coocurringTagsList) <= count:
+                        break
+                    similarHashTag = coocurringTagsList[count]
+                    userInfo = getUserInfo(eachMedia)
+                    if userInfo == "error":
+                        print(colored("User info not available","red"))
+                        break
+                    originalUserId = userInfo["id"]
+
+                    orgininalMediaFollowerCount = getFollowerCount(userInfo)
+                    try:
+                        dataForMapping = getRecentMediaForTag(similarHashTag, orgininalMediaFollowerCount,userInfoFileName, similarMediaFileName, originalMediaId, originalUserId)
+                        found = True
+                    except:
+                        print(colored("Bad hashtag:: " + similarHashTag,"red"))
+                        count +=1
+                        continue
+                if found == False:
                     continue
-                similarHashTag = coocurringTagsList[0]
-                userInfo = getUserInfo(eachMedia)
-                if userInfo == "error":
-                    print(colored("User info not available","red"))
-                    continue
-                originalUserId = userInfo["id"]
                 saveUserInfo(userInfo,userInfoFileName, sys.argv[1], None)
-                orgininalMediaFollowerCount = getFollowerCount(userInfo)
-                dataForMapping = getRecentMediaForTag(similarHashTag, orgininalMediaFollowerCount,userInfoFileName, similarMediaFileName, originalMediaId, originalUserId)
                 mediaMap[eachMedia["id"]] =dataForMapping[0]["id"]
                 usersMap[userInfo["id"]] = dataForMapping[1]["id"]
 
