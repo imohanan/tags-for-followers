@@ -1,4 +1,3 @@
-from instagram.client import InstagramAPI
 import ConfigParser
 import urllib2, urllib
 import re
@@ -8,13 +7,13 @@ if __name__ == '__main__':
 	config = ConfigParser.ConfigParser()
 	config.read('defaults.cfg')
 	
-	tags = ['follow4follow']#,'like4like', 'spam4spam', 'followme']
+	tags = ['followme']#,, , 'followme', 'follow4follow', 'like4like', 'spam4spam']
 	for tag in tags:
 		count = 0
 		next_url = 'https://api.instagram.com/v1/tags/'+tag+'/media/recent?access_token='+config.get('UserDetails','access_token')
 		while( count < 150):
 			count += 1
-			file_name = 'data/recent_media/'+tag"/"+"10.23_"+str(count)+'.json'
+			file_name = 'data/recent_media/'+tag+"/"+"10.23_"+str(count)+'.json'
 			url = next_url
 
 			result = urllib2.urlopen(url).read()
