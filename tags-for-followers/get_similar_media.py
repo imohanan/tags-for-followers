@@ -2,6 +2,7 @@
 import sys, json, pprint, os, datetime, time, re
 import ConfigParser
 import urllib2, urllib
+from termcolor import colored
 
 def hasSimilarFollowerCount(similarUserInfo, orgininalMediaFollowerCount):
     config = ConfigParser.ConfigParser()
@@ -10,7 +11,7 @@ def hasSimilarFollowerCount(similarUserInfo, orgininalMediaFollowerCount):
     similarUserFollowerCount = getFollowerCount(similarUserInfo)
     return (similarUserFollowerCount >= (orgininalMediaFollowerCount-percentDiff)) and (similarUserFollowerCount <= orgininalMediaFollowerCount+percentDiff) 
 
-def getRecentMediaForTag(hashtag,orgininalMediaFollowerCount, userInfoFileName, similarMediaFileName):
+def getRecentMediaForTag(hashtag,orgininalMediaFollowerCount, userInfoFileName, similarMediaFileName, originalMediaId, originalUserId):
     dataForMapping = list()
     config = ConfigParser.ConfigParser()
     config.read('defaults.cfg')
@@ -27,19 +28,19 @@ def getRecentMediaForTag(hashtag,orgininalMediaFollowerCount, userInfoFileName, 
         #first 20 recent media having that tag
         data = result["data"]
         for eachMedia in data:
-            print("$$$$$$$$$$$$$$$$$similar tag media%%%%%%%%%%%%%%%%%%" + str(eachMedia["tags"]))
+            # print("$$$$$$$$$$$$$$$$$similar tag media%%%%%%%%%%%%%%%%%%" + str(eachMedia["tags"]))
             mediaTags = eachMedia["tags"]
             if not hasFollowTags(mediaTags,getFilterList(config.get('FilterFile','file_name'))):
                 similarUserInfo = getUserInfo(eachMedia)
-                print("%%%%%%%%%%%%%%%%%%found similar tag media%%%%%%%%%%%%%%%%%%")
+                print(colored("%%%%%%%%%%%%%%%%%%found similar tag media%%%%%%%%%%%%%%%%%%","yellow"))
                 if hasSimilarFollowerCount(similarUserInfo, orgininalMediaFollowerCount):
-                    print("******************found a similar media*****************")
+                    print(colored("**********************************found a similar media*****************************",'green'))
                     similarMedia = eachMedia
                     #save similar Media
                     dataForMapping.append(similarMedia)
-                    saveSimilarMedia(similarMedia,similarMediaFileName,hashtag)
+                    saveSimilarMedia(similarMedia,similarMediaFileName,hashtag,originalMediaId)
                     #save the similar media and its userDetails
-                    saveUserInfo(similarUserInfo,userInfoFileName, hashtag)
+                    saveUserInfo(similarUserInfo,userInfoFileName, hashtag,originalUserId)
                     dataForMapping.append(similarUserInfo)
                     break
                 
@@ -57,8 +58,10 @@ def getRecentMediaForTag(hashtag,orgininalMediaFollowerCount, userInfoFileName, 
     #print result
 
 
-def saveSimilarMedia(similarMedia, fileName, hashtag):
+def saveSimilarMedia(similarMedia, fileName, hashtag, originalMediaId):
     similarMedia["hashtag"] = hashtag
+    similarMedia["originalMediaId"] = originalMediaId
+    similarMedia["timestamp"] = datetime.datetime.now().isoformat()
     with open(fileName, 'a') as outputFile:
         json.dump(similarMedia,outputFile)
         outputFile.write("\n")
@@ -110,7 +113,7 @@ def getUserInfo(media):
 def getFollowerCount(userInfo):
     return userInfo["counts"]["followed_by"]
 
-def saveUserInfo(data, fileName, tag):
+def saveUserInfo(data, fileName, tag, originalUserId):
     try:
         with open(fileName,"rb") as dataFile:    
             userInfo = json.load(dataFile)
@@ -121,15 +124,14 @@ def saveUserInfo(data, fileName, tag):
         print(data["id"] + " user is already present in the file")
         print("fileData>>>>>" + userInfo[data["id"]])
         print("newData<<<<<" + data)
-
-        userInfo[data["id"]]["hashtags"].append(tag)
-        userInfo[data["id"]]["timeStamp"] = datetime.datetime.now().isoformat()
     else:
         #add data in the dict
         data["hashtags"] = list()
-        data["hashtags"].append(tag)
-        data["timeStamp"] = datetime.datetime.now().isoformat()
         userInfo[data["id"]] = data
+
+    userInfo[data["id"]]["hashtags"].append(tag)
+    userInfo[data["id"]]["timestamp"] = datetime.datetime.now().isoformat()
+    userInfo[data["id"]]["originalUserId"] = originalUserId
 
     #write the new/modified data in the file (overwrite)
     print("USER INFO>>>>>>>>>>>>>>>" +str(userInfo))
@@ -152,11 +154,16 @@ if __name__ == "__main__":
     usersMap = dict()
     mediaMap = dict()
     mediaMapFileName = "data/mappings/media_map_"+re.sub(r"\/",r"-", str(time.strftime("%x")))+ "_"+ str(time.strftime("%X"))+".json"
+    mediaCount =0
     for fileName in os.listdir(inputDirName):
         if fileName[-5:] == ".json":
             data = readJsonFile(inputDirName, fileName)
             for eachMedia in data:
+                mediaCount +=1
+                originalMediaId = eachMedia["id"]
+                print(colored("????????????STARTED processing media " + str(mediaCount) + "  Media iD: " + str(originalMediaId),'magenta'))
                 mediaTags = eachMedia["tags"]
+
                 # print(mediaTags)
                 coocurringTags = filterTags(mediaTags, getFilterList(filterListFileName))
                 coocurringTagsList = list(coocurringTags)
@@ -165,22 +172,24 @@ if __name__ == "__main__":
                 similarHashTag = coocurringTagsList[0]
                 userInfo = getUserInfo(eachMedia)
                 if userInfo == "error":
-                    print("User info not available")
+                    print(colored("User info not available","red"))
                     continue
-                saveUserInfo(userInfo,userInfoFileName, sys.argv[1])
+                originalUserId = userInfo["id"]
+                saveUserInfo(userInfo,userInfoFileName, sys.argv[1], None)
                 orgininalMediaFollowerCount = getFollowerCount(userInfo)
-                dataForMapping = getRecentMediaForTag(similarHashTag, orgininalMediaFollowerCount,userInfoFileName, similarMediaFileName)
+                dataForMapping = getRecentMediaForTag(similarHashTag, orgininalMediaFollowerCount,userInfoFileName, similarMediaFileName, originalMediaId, originalUserId)
                 mediaMap[eachMedia["id"]] =dataForMapping[0]["id"]
-                usersMap[userInfo["id"]] = dataForMapping[0]["id"]
+                usersMap[userInfo["id"]] = dataForMapping[1]["id"]
+
+                with open(usersMapFileName, 'wb') as outputFile:
+                    json.dump(usersMap,outputFile)
+                with open(mediaMapFileName, 'wb') as outputFile:
+                    json.dump(mediaMap,outputFile)
+                print(colored("??????????????ENDED processing media  " + str(mediaCount) + "  Media ID: " + str(originalMediaId) + "  User Id: " + str(originalUserId),'magenta'))
             # print(data)
             # break
 
 
-    with open(usersMapFileName, 'wb') as outputFile:
-        json.dump(usersMap,outputFile)
 
-
-    with open(mediaMapFileName, 'wb') as outputFile:
-        json.dump(mediaMap,outputFile)
 
 #python get_similar_media.py follow4follow
