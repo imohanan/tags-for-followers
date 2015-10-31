@@ -1,4 +1,4 @@
-from instagram.client import InstagramAPI
+
 import ConfigParser
 import urllib2, urllib
 import re
