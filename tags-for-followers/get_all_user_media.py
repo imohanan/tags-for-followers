@@ -16,13 +16,11 @@ def get_user_media(user_id, config, directory):
         count += 1
         url = next_url
         
-        try:
-            result = urllib2.urlopen(url).read()
-        except urllib2.HTTPError:
-            print "Cannot fetch" + user_id
-            return 0
-
+        result = urllib.urlopen(url).read()
         json_data = json.loads(result)
+        if json_data["meta"]["code"] == 429:
+            print "Rate Limit exceeded"
+            exit()
 
         done = False
         for data_item in json_data["data"]:
@@ -43,7 +41,7 @@ def get_user_media(user_id, config, directory):
                 break
         time.sleep(0.1)
 
-    print len(media_list)
+    #print len(media_list)
     file_name = open(directory+"/"+user_id+'.json', 'w')
     json.dump(media_list, file_name)
     return 1
@@ -62,13 +60,10 @@ if __name__ == '__main__':
     for line in already_collected_file:
         already_collected_id_list.add(line.strip())
 
-    user_mapping_file = open(sys.argv[1])
+    user_mapping_file = open('data/mappings/user_mapping/users_map.json', 'r')
     data = json.loads(user_mapping_file.readline())
-    user_type = sys.argv[2]
-    if user_type == "follow":
-        user_ids = data.keys()
-    else:
-        user_ids = data.values()
+    user_ids = data.keys()
+    user_ids.extend(data.values())
     for user_id in user_ids:
         if user_id not in already_collected_id_list:
             status = get_user_media(user_id, config, directory)
