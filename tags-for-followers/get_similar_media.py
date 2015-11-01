@@ -12,7 +12,7 @@ def hasSimilarFollowerCount(similarUserInfo, orgininalMediaFollowerCount):
     return (similarUserFollowerCount >= (orgininalMediaFollowerCount-percentDiff)) and (similarUserFollowerCount <= orgininalMediaFollowerCount+percentDiff) 
 
 def getRecentMediaForTag(hashtag,orgininalMediaFollowerCount, userInfoFileName, similarMediaFileName, originalMediaId, originalUserId):
-    dataForMapping = list()
+
     config = ConfigParser.ConfigParser()
     config.read('defaults.cfg')
     count = 0
@@ -147,17 +147,30 @@ if __name__ == "__main__":
     baseDataPath = "data/recent_media/"
     inputDirName = baseDataPath + sys.argv[1]
     filterListFileName = config.get('FilterFile','file_name')#sys.argv[2]
-    userInfoFileName = "data/users/users_"+ re.sub(r"\/",r"-", str(time.strftime("%x")))+ "_"+ str(time.strftime("%X"))+".json"
+    userInfoFileName = "data/users/original_users/users_"+ re.sub(r"\/",r"-", str(time.strftime("%x")))+".json"
+    similarUserInfoFileName = "data/users/similar_users/users_"+ re.sub(r"\/",r"-", str(time.strftime("%x")))+".json"
+
     similarMediaFileName = "data/similar_media/similar_media_"+ re.sub(r"\/",r"-", str(time.strftime("%x")))+ "_"+ str(time.strftime("%X"))+".json"
 
     print(userInfoFileName)
-    usersMapFileName = "data/mappings/users_map_"+re.sub(r"\/",r"-", str(time.strftime("%x")))+ "_"+ str(time.strftime("%X"))+".json"
-    usersMap = dict()
-    mediaMap = dict()
-    mediaMapFileName = "data/mappings/media_map_"+re.sub(r"\/",r"-", str(time.strftime("%x")))+ "_"+ str(time.strftime("%X"))+".json"
+    usersMapFileName = "data/mappings/user_mapping/users_map"+".json"
+    mediaMapFileName = "data/mappings/media_mapping/media_map"+".json"
+    try:
+        with open(mediaMapFileName,"rb") as dataFile:
+            mediaMap = json.load(dataFile)
+    except IOError:
+        mediaMap = dict()
+
+    try:
+        with open(usersMapFileName,"rb") as dataFile:
+            userMap = json.load(dataFile)
+    except IOError:
+        userMap = dict()
+
     mediaCount =0
     for fileName in os.listdir(inputDirName):
         if fileName[-5:] == ".json":
+            print(colored("PROCESSING FILE:::::::::::::::::::::::::::::::::::::::::::::::::" + fileName,"cyan"))
             data = readJsonFile(inputDirName, fileName)
             for eachMedia in data:
                 mediaCount +=1
@@ -166,6 +179,9 @@ if __name__ == "__main__":
                 print(colored("????????????STARTED processing media " + str(mediaCount) + "  Media iD: " + str(originalMediaId),'magenta'))
                 mediaTags = eachMedia["tags"]
 
+                if originalMediaId in mediaMap.keys():
+                    print(colored("Media already present...." + originalMediaId, "red"))
+                    continue
                 # print(mediaTags)
                 coocurringTags = filterTags(mediaTags, getFilterList(filterListFileName))
                 coocurringTagsList = list(coocurringTags)
@@ -179,10 +195,12 @@ if __name__ == "__main__":
                         print(colored("User info not available","red"))
                         break
                     originalUserId = userInfo["id"]
-
+                    if originalUserId in userMap.keys():
+                        print(colored("User already present..."+originalUserId,"red"))
+                        continue
                     orgininalMediaFollowerCount = getFollowerCount(userInfo)
                     try:
-                        dataForMapping = getRecentMediaForTag(similarHashTag, orgininalMediaFollowerCount,userInfoFileName, similarMediaFileName, originalMediaId, originalUserId)
+                        dataForMapping = getRecentMediaForTag(similarHashTag, orgininalMediaFollowerCount,similarUserInfoFileName, similarMediaFileName, originalMediaId, originalUserId)
                         found = True
                     except:
                         print(colored("Bad hashtag:: " + similarHashTag,"red"))
@@ -192,10 +210,10 @@ if __name__ == "__main__":
                     continue
                 saveUserInfo(userInfo,userInfoFileName, sys.argv[1], None)
                 mediaMap[eachMedia["id"]] =dataForMapping[0]["id"]
-                usersMap[userInfo["id"]] = dataForMapping[1]["id"]
+                userMap[userInfo["id"]] = dataForMapping[1]["id"]
 
                 with open(usersMapFileName, 'wb') as outputFile:
-                    json.dump(usersMap,outputFile)
+                    json.dump(userMap,outputFile)
                 with open(mediaMapFileName, 'wb') as outputFile:
                     json.dump(mediaMap,outputFile)
                 print(colored("??????????????ENDED processing media  " + str(mediaCount) + "  Media ID: " + str(originalMediaId) + "  User Id: " + str(originalUserId),'magenta'))
