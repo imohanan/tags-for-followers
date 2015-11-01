@@ -2,13 +2,16 @@ import ConfigParser
 import urllib2, urllib
 import re
 import time
+import os
 
-if __name__ == '__main__':
+
+def recent_media(tags):
 	config = ConfigParser.ConfigParser()
 	config.read('defaults.cfg')
 	
-	tags = ['followme']#,, , 'followme', 'follow4follow', 'like4like', 'spam4spam']
 	for tag in tags:
+		if not os.path.exists('data/recent_media/'+tag):
+    			os.makedirs('data/recent_media/'+tag)
 		count = 0
 		next_url = 'https://api.instagram.com/v1/tags/'+tag+'/media/recent?access_token='+config.get('UserDetails','access_token')
 		while( count < 150):
@@ -30,3 +33,7 @@ if __name__ == '__main__':
 
 			time.sleep(1)
 	#print result
+
+if __name__ == '__main__':
+	tags = ['followme']#,, , 'followme', 'follow4follow', 'like4like', 'spam4spam']
+	recent_media(tags)
