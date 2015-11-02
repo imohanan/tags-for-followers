@@ -22,6 +22,7 @@ def getRecentMediaForTag(hashtag,orgininalMediaFollowerCount, userInfoFileName, 
     # found = False
     similarMedia = None
     dataForMapping = list()
+    noOfCalls =0
     while(True):
         url = next_url
         resultStr =urllib2.urlopen(url).read()
@@ -46,13 +47,15 @@ def getRecentMediaForTag(hashtag,orgininalMediaFollowerCount, userInfoFileName, 
                     break
                 
         if similarMedia == None:
+            noOfCalls+=1
             resultStr = urllib2.unquote(resultStr).decode('unicode_escape')
             resultStr = resultStr.replace('\/','/')
             reg_exp = r'"next_url":"(.*)"},"meta":'
             url_result = re.search(reg_exp, resultStr)
-            next_url =  url_result.group(1) 
+            if url_result == None or noOfCalls > 50:
+                raise Exception("NO MORE PAGINAION")
+            next_url =  url_result.group(1)
             print(next_url)
-            time.sleep(1)
         else:
             return dataForMapping
 
@@ -102,7 +105,8 @@ def getUserInfo(media):
     userId = media["user"]["id"]
     url = "https://api.instagram.com/v1/users/"+ userId + "?access_token="+config.get('UserDetails','access_token')
     userInfo = json.loads(urllib.urlopen(url).read())
-    if userInfo["meta"]["code"] == 200:
+    print(userInfo)
+    if userInfo and userInfo["meta"]["code"] == 200:
         return userInfo["data"]
     else:
         return "error"
@@ -168,6 +172,7 @@ if __name__ == "__main__":
         userMap = dict()
 
     mediaCount =0
+    validMediaCount = len(mediaMap.keys())
     for fileName in os.listdir(inputDirName):
         if fileName[-5:] == ".json":
             print(colored("PROCESSING FILE:::::::::::::::::::::::::::::::::::::::::::::::::" + fileName,"cyan"))
@@ -197,11 +202,12 @@ if __name__ == "__main__":
                     originalUserId = userInfo["id"]
                     if originalUserId in userMap.keys():
                         print(colored("User already present..."+originalUserId,"red"))
-                        continue
+                        break
                     orgininalMediaFollowerCount = getFollowerCount(userInfo)
                     try:
                         dataForMapping = getRecentMediaForTag(similarHashTag, orgininalMediaFollowerCount,similarUserInfoFileName, similarMediaFileName, originalMediaId, originalUserId)
                         found = True
+                        validMediaCount+=1
                     except:
                         print(colored("Bad hashtag:: " + similarHashTag,"red"))
                         count +=1
@@ -217,6 +223,11 @@ if __name__ == "__main__":
                 with open(mediaMapFileName, 'wb') as outputFile:
                     json.dump(mediaMap,outputFile)
                 print(colored("??????????????ENDED processing media  " + str(mediaCount) + "  Media ID: " + str(originalMediaId) + "  User Id: " + str(originalUserId),'magenta'))
+                print(colored("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ValidMediaID Processed---->" + str(validMediaCount),"magenta"))
+            if validMediaCount > 2000:
+                break
+        if validMediaCount > 2000:
+            break
             # print(data)
             # break
 
