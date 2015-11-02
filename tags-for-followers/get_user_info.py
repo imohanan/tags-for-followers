@@ -12,13 +12,13 @@ def saveUserInfo(data, fileName, originalUserId):
         userInfo = dict()
     if data["id"] in userInfo.keys():
         #if userdata is already present skip it
-        print(colored(data["id"] + " user is already present in the file","red"))
+        print(colored(str(data["id"]) + " user is already present in the file","red"))
         print("fileData>>>>>" + str(userInfo[data["id"]]))
         print("newData<<<<<" + str(data))
     else:
         #add data in the dict
         userInfo[data["id"]] = data
-        userInfo[data["id"]]["timestamp"] = datetime.datetime.now().isoformat()
+        userInfo[data["id"]]["timestamp"] = int(time.time())
         userInfo[data["id"]]["originalUserId"] = originalUserId
         #write the new/modified data in the file (overwrite)
         print("USER INFO>>>>>>>>>>>>>>>" +str(userInfo))
@@ -50,12 +50,12 @@ if __name__ == "__main__":
     for key, value in userMap.iteritems():
         originalUserInfo = getUserInfo(key)
         if originalUserInfo == "error":
-            print("ERROR:::: UserInfo not available for user Id ::: " + key,"red")
+            print("ERROR:::: UserInfo not available for user Id ::: " + str(key),"red")
         else:
             saveUserInfo(originalUserInfo,userInfoFileName, None)
 
         similarUserInfo = getUserInfo(value)
         if similarUserInfo == "error":
-            print("ERROR:::: UserInfo not available for similar user Id ::: " + key,"red")
+            print("ERROR:::: UserInfo not available for similar user Id ::: " + str(key),"red")
         else:
             saveUserInfo(similarUserInfo,similarUserInfoFileName, key)
