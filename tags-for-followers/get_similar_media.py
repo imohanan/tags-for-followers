@@ -32,6 +32,8 @@ def getRecentMediaForTag(hashtag,orgininalMediaFollowerCount, userInfoFileName, 
         for eachMedia in data:
             # print("$$$$$$$$$$$$$$$$$similar tag media%%%%%%%%%%%%%%%%%%" + str(eachMedia["tags"]))
             mediaTags = eachMedia["tags"]
+            if int(time.time()) - int(eachMedia["created_time"]) > 3600:
+                raise Exception("Data too old!!!")
             if not hasFollowTags(mediaTags,getFilterList(config.get('FilterFile','file_name'))):
                 similarUserInfo = getUserInfo(eachMedia)
                 print(colored("%%%%%%%%%%%%%%%%%%found similar tag media%%%%%%%%%%%%%%%%%%","yellow"))
@@ -53,7 +55,7 @@ def getRecentMediaForTag(hashtag,orgininalMediaFollowerCount, userInfoFileName, 
             reg_exp = r'"next_url":"(.*)"},"meta":'
             url_result = re.search(reg_exp, resultStr)
             if url_result == None or noOfCalls > 50:
-                raise Exception("NO MORE PAGINAION")
+                raise Exception("No more pagination!!!")
             next_url =  url_result.group(1)
             print(next_url)
         else:
@@ -65,7 +67,7 @@ def getRecentMediaForTag(hashtag,orgininalMediaFollowerCount, userInfoFileName, 
 def saveSimilarMedia(similarMedia, fileName, hashtag, originalMediaId):
     similarMedia["hashtag"] = hashtag
     similarMedia["originalMediaId"] = originalMediaId
-    similarMedia["timestamp"] = datetime.datetime.now().isoformat()
+    similarMedia["timestamp"] = int(time.time())
     with open(fileName, 'a') as outputFile:
         json.dump(similarMedia,outputFile)
         outputFile.write("\n")
@@ -105,7 +107,7 @@ def getUserInfo(media):
     userId = media["user"]["id"]
     url = "https://api.instagram.com/v1/users/"+ userId + "?access_token="+config.get('UserDetails','access_token')
     userInfo = json.loads(urllib.urlopen(url).read())
-    print(userInfo)
+    print(str(userInfo))
     if userInfo and userInfo["meta"]["code"] == 200:
         return userInfo["data"]
     else:
@@ -126,16 +128,16 @@ def saveUserInfo(data, fileName, tag, originalUserId):
         userInfo = dict()
     if data["id"] in userInfo.keys():
         #if userdata is already present add the hashtag in the list
-        print(data["id"] + " user is already present in the file")
-        print("fileData>>>>>" + userInfo[data["id"]])
-        print("newData<<<<<" + data)
+        print(str(data["id"]) + " user is already present in the file")
+        print("fileData>>>>>" + str(userInfo[data["id"]]))
+        print("newData<<<<<" + str(data))
     else:
         #add data in the dict
         data["hashtags"] = list()
         userInfo[data["id"]] = data
 
     userInfo[data["id"]]["hashtags"].append(tag)
-    userInfo[data["id"]]["timestamp"] = datetime.datetime.now().isoformat()
+    userInfo[data["id"]]["timestamp"] = int(time.time())
     userInfo[data["id"]]["originalUserId"] = originalUserId
 
     #write the new/modified data in the file (overwrite)
@@ -185,7 +187,7 @@ if __name__ == "__main__":
                 mediaTags = eachMedia["tags"]
 
                 if originalMediaId in mediaMap.keys():
-                    print(colored("Media already present...." + originalMediaId, "red"))
+                    print(colored("Media already present...." + str(originalMediaId), "red"))
                     continue
                 # print(mediaTags)
                 coocurringTags = filterTags(mediaTags, getFilterList(filterListFileName))
@@ -201,17 +203,18 @@ if __name__ == "__main__":
                         break
                     originalUserId = userInfo["id"]
                     if originalUserId in userMap.keys():
-                        print(colored("User already present..."+originalUserId,"red"))
+                        print(colored("User already present..."+str(originalUserId),"red"))
                         break
                     orgininalMediaFollowerCount = getFollowerCount(userInfo)
                     try:
                         dataForMapping = getRecentMediaForTag(similarHashTag, orgininalMediaFollowerCount,similarUserInfoFileName, similarMediaFileName, originalMediaId, originalUserId)
                         found = True
                         validMediaCount+=1
-                    except:
-                        print(colored("Bad hashtag:: " + similarHashTag,"red"))
+                    except Exception, msg:
+                        print(colored(str(msg) + ":: " + similarHashTag,"red"))
                         count +=1
                         continue
+
                 if found == False:
                     continue
                 saveUserInfo(userInfo,userInfoFileName, sys.argv[1], None)
