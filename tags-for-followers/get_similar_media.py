@@ -212,6 +212,9 @@ if __name__ == "__main__":
                         validMediaCount+=1
                     except Exception, msg:
                         print(colored(str(msg) + ":: " + similarHashTag,"red"))
+                        mediaMap[eachMedia["id"]] =None
+                        with open(mediaMapFileName, 'wb') as outputFile:
+                            json.dump(mediaMap,outputFile)
                         count +=1
                         continue
 
