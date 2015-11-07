@@ -4,9 +4,11 @@ import ConfigParser
 import urllib2, urllib
 from termcolor import colored
 
+CONFIG_FILE = 'defaults1.cfg' 
+
 def hasSimilarFollowerCount(similarUserInfo, orgininalMediaFollowerCount):
     config = ConfigParser.ConfigParser()
-    config.read('defaults.cfg')
+    config.read(CONFIG_FILE)
     percentDiff = float(config.get("SimilarFollowerCount", "percent_difference"))*orgininalMediaFollowerCount/100
     similarUserFollowerCount = getFollowerCount(similarUserInfo)
     return (similarUserFollowerCount >= (orgininalMediaFollowerCount-percentDiff)) and (similarUserFollowerCount <= orgininalMediaFollowerCount+percentDiff) 
@@ -14,7 +16,7 @@ def hasSimilarFollowerCount(similarUserInfo, orgininalMediaFollowerCount):
 def getRecentMediaForTag(hashtag,orgininalMediaFollowerCount, userInfoFileName, similarMediaFileName, originalMediaId, originalUserId):
 
     config = ConfigParser.ConfigParser()
-    config.read('defaults.cfg')
+    config.read(CONFIG_FILE)
     count = 0
 
     next_url = 'https://api.instagram.com/v1/tags/'+hashtag+'/media/recent?access_token='+config.get('UserDetails','access_token')
@@ -101,7 +103,7 @@ def readJsonFile(inputDirName, inputFileName):
 
 def getUserInfo(media):
     config = ConfigParser.ConfigParser()
-    config.read('defaults.cfg')
+    config.read(CONFIG_FILE)
     userId = media["user"]["id"]
     url = "https://api.instagram.com/v1/users/"+ userId + "?access_token="+config.get('UserDetails','access_token')
     userInfo = json.loads(urllib.urlopen(url).read())
@@ -147,10 +149,16 @@ def saveUserInfo(data, fileName, tag, originalUserId):
 if __name__ == "__main__":
 
     config = ConfigParser.ConfigParser()
-    config.read('defaults.cfg')
+    config.read(CONFIG_FILE)
     baseDataPath = "data/recent_media/"
     inputDirName = baseDataPath + sys.argv[1]
     filterListFileName = config.get('FilterFile','file_name')#sys.argv[2]
+    if not os.path.exists('data/users/original_users'):
+        os.makedirs('data/users/original_users')
+        os.makedirs('data/users/similar_users')
+        os.makedirs('data/similar_media')
+        os.makedirs('data/mappings/user_mapping')
+        os.makedirs('data/mappings/media_mapping')
     userInfoFileName = "data/users/original_users/users_"+ re.sub(r"\/",r"-", str(time.strftime("%x")))+".json"
     similarUserInfoFileName = "data/users/similar_users/users_"+ re.sub(r"\/",r"-", str(time.strftime("%x")))+".json"
 
