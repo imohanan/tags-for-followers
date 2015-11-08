@@ -4,7 +4,7 @@ import ConfigParser
 import urllib2, urllib
 from termcolor import colored
 
-CONFIG_FILE = 'defaults1.cfg' 
+CONFIG_FILE = 'defaults.cfg'
 
 def hasSimilarFollowerCount(similarUserInfo, orgininalMediaFollowerCount):
     config = ConfigParser.ConfigParser()
@@ -181,6 +181,7 @@ if __name__ == "__main__":
 
     mediaCount =0
     validMediaCount = len(mediaMap.keys())
+    totalUsersCount = len(userMap.keys())
     for fileName in os.listdir(inputDirName):
         if fileName[-5:] == ".json":
             print(colored("PROCESSING FILE:::::::::::::::::::::::::::::::::::::::::::::::::" + fileName,"cyan"))
@@ -189,7 +190,7 @@ if __name__ == "__main__":
                 mediaCount +=1
                 count =0
                 originalMediaId = eachMedia["id"]
-                print(colored("????????????STARTED processing media " + str(mediaCount) + "  Media iD: " + str(originalMediaId),'magenta'))
+                print(colored("????????????STARTED processing media " + str(mediaCount) + "  Media iD: " + str(originalMediaId),'yellow'))
                 mediaTags = eachMedia["tags"]
 
                 if originalMediaId in mediaMap.keys():
@@ -216,6 +217,7 @@ if __name__ == "__main__":
                         dataForMapping = getRecentMediaForTag(similarHashTag, orgininalMediaFollowerCount,similarUserInfoFileName, similarMediaFileName, originalMediaId, originalUserId)
                         found = True
                         validMediaCount+=1
+                        totalUsersCount+=1
                     except Exception, msg:
                         print(colored(str(msg) + ":: " + similarHashTag,"red"))
                         mediaMap[eachMedia["id"]] =None
@@ -234,11 +236,11 @@ if __name__ == "__main__":
                     json.dump(userMap,outputFile)
                 with open(mediaMapFileName, 'wb') as outputFile:
                     json.dump(mediaMap,outputFile)
-                print(colored("??????????????ENDED processing media  " + str(mediaCount) + "  Media ID: " + str(originalMediaId) + "  User Id: " + str(originalUserId),'magenta'))
-                print(colored("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ValidMediaID Processed---->" + str(validMediaCount),"magenta"))
-            if validMediaCount > 4000:
+                print(colored("??????????????ENDED processing media  " + str(mediaCount) + "  Media ID: " + str(originalMediaId) + "  User Id: " + str(originalUserId),'yellow'))
+                print(colored("$$$$$$$USER count :: " + str(totalUsersCount) +" $$$$$$$$$$$$$$$$$$$$$$$ValidMediaID Processed---->" + str(validMediaCount),"magenta"))
+            if totalUsersCount > 10000:
                 break
-        if validMediaCount > 4000:
+        if totalUsersCount > 10000:
             break
             # print(data)
             # break
