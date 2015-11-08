@@ -238,9 +238,9 @@ if __name__ == "__main__":
                     json.dump(mediaMap,outputFile)
                 print(colored("??????????????ENDED processing media  " + str(mediaCount) + "  Media ID: " + str(originalMediaId) + "  User Id: " + str(originalUserId),'yellow'))
                 print(colored("$$$$$$$USER count :: " + str(totalUsersCount) +" $$$$$$$$$$$$$$$$$$$$$$$ValidMediaID Processed---->" + str(validMediaCount),"magenta"))
-            if totalUsersCount > 10000:
+            if totalUsersCount > 8000:
                 break
-        if totalUsersCount > 10000:
+        if totalUsersCount > 8000:
             break
             # print(data)
             # break
