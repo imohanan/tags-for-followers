@@ -14,14 +14,14 @@ def saveUserInfo(data, fileName, originalUserId):
         #if userdata is already present skip it
         print(colored(str(data["id"]) + " user is already present in the file","red"))
         print("fileData>>>>>" + str(userInfo[data["id"]]))
-        print("newData<<<<<" + str(data))
+        #print("newData<<<<<" + str(data))
     else:
         #add data in the dict
         userInfo[data["id"]] = data
         userInfo[data["id"]]["timestamp"] = int(time.time())
         userInfo[data["id"]]["originalUserId"] = originalUserId
         #write the new/modified data in the file (overwrite)
-        print("USER INFO>>>>>>>>>>>>>>>" +str(userInfo))
+        #print("USER INFO>>>>>>>>>>>>>>>" +str(userInfo))
         with open(fileName, 'w') as outputFile:
             json.dump(userInfo,outputFile)
 
@@ -42,20 +42,31 @@ if __name__ == "__main__":
 
     config = ConfigParser.ConfigParser()
     config.read('defaults.cfg')
-    inputFileName = "data/mappings/user_mapping/users_map.json"
+    inputFileName = "data/mappings/user_mapping/users_map1.json"
     with open(inputFileName) as user_map:
         userMap = json.load(user_map)
     userInfoFileName = "data/users/original_users/users_"+ re.sub(r"\/",r"-", str(time.strftime("%x")))+".json"
+    with open(userInfoFileName,"rb") as dataFile:
+        userInfoMap = json.load(dataFile)
     similarUserInfoFileName = "data/users/similar_users/users_"+ re.sub(r"\/",r"-", str(time.strftime("%x")))+".json"
+    with open(similarUserInfoFileName,"rb") as dataFile:
+        similarUserInfoMap = json.load(dataFile)
+    counter = 1
     for key, value in userMap.iteritems():
-        originalUserInfo = getUserInfo(key)
-        if originalUserInfo == "error":
-            print("ERROR:::: UserInfo not available for user Id ::: " + str(key),"red")
-        else:
-            saveUserInfo(originalUserInfo,userInfoFileName, None)
+        if key not in userInfoMap:
+            originalUserInfo = getUserInfo(key)
+            if originalUserInfo == "error":
+                print("ERROR:::: UserInfo not available for user Id ::: " + str(key),"red")
+            else:
+                saveUserInfo(originalUserInfo,userInfoFileName, None)
+                print "processed: " + str(counter)
+                counter += 1
 
-        similarUserInfo = getUserInfo(value)
-        if similarUserInfo == "error":
-            print("ERROR:::: UserInfo not available for similar user Id ::: " + str(key),"red")
-        else:
-            saveUserInfo(similarUserInfo,similarUserInfoFileName, key)
+        if value not in similarUserInfoMap :
+            similarUserInfo = getUserInfo(value)
+            if similarUserInfo == "error":
+                print("ERROR:::: UserInfo not available for similar user Id ::: " + str(key),"red")
+            else:
+                saveUserInfo(similarUserInfo,similarUserInfoFileName, key)
+                print "processed: " + str(counter)
+                counter += 1
