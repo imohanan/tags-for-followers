@@ -41,10 +41,12 @@ if __name__ == '__main__':
     data = json.loads(media_mapping_file.readline())
     media_ids = data.keys()
     media_ids.extend(data.values())
+    counter = 1
     for media_id in media_ids:
         if media_id not in already_collected_id_list:
-            print "Processing media_id: " + media_id
             get_media(media_id, config, directory);
             already_collected_file.write(media_id + "\n")
             already_collected_id_list.add(media_id)
+            print "Processed: " + str(counter)
+            counter = counter + 1
 
