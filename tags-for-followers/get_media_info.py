@@ -28,7 +28,7 @@ if __name__ == '__main__':
     config.read('defaults1.cfg')
     
     today = datetime.date.today()
-    directory = 'data/media_info/'+str(today) + "/" + str(datetime.datetime.today().hour)
+    directory = 'data/media_info/'+str(today) + "/"
     if not os.path.exists(directory):
         os.makedirs(directory)
     
