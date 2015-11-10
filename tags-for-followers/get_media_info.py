@@ -37,12 +37,13 @@ if __name__ == '__main__':
     for line in already_collected_file:
         already_collected_id_list.add(line.strip())
 
-    media_mapping_file = open('data/mappings/media_mapping/media_map.json', 'r')
+    media_mapping_file = open('data/mappings/media_mapping/media_map1.json', 'r')
     data = json.loads(media_mapping_file.readline())
     media_ids = data.keys()
     media_ids.extend(data.values())
     for media_id in media_ids:
         if media_id not in already_collected_id_list:
+            print "Processing media_id: " + media_id
             get_media(media_id, config, directory);
             already_collected_file.write(media_id + "\n")
             already_collected_id_list.add(media_id)
