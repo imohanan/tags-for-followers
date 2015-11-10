@@ -25,7 +25,7 @@ def get_media(media_id, config, directory):
 
 if __name__ == '__main__':
     config = ConfigParser.ConfigParser()
-    config.read('defaults.cfg')
+    config.read('defaults1.cfg')
     
     today = datetime.date.today()
     directory = 'data/media_info/'+str(today) + "/" + str(datetime.datetime.today().hour)
@@ -43,7 +43,7 @@ if __name__ == '__main__':
     media_ids.extend(data.values())
     counter = 1
     for media_id in media_ids:
-        if media_id not in already_collected_id_list:
+        if media_id not in already_collected_id_list and media_id != None:
             get_media(media_id, config, directory);
             already_collected_file.write(media_id + "\n")
             already_collected_id_list.add(media_id)
