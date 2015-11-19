@@ -108,9 +108,8 @@ if __name__ == '__main__':
 		data = json.load(users_file)
 		keys = data.keys()
 
-		while len(selected_users) < 200:
-			rand = random.randint(0, len(keys))
-			user, similar_user = keys[rand], int(data[str(keys[rand])])
+		for key in keys:
+			user, similar_user = key, int(data[str(key)])
 			if user in selected_users: continue			
 			print 'saving data of user '+ str(user)
 			save_user(user, directory)
