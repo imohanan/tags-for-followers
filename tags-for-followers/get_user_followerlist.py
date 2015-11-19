@@ -86,7 +86,7 @@ if __name__ == '__main__':
 	config.read('defaults1.cfg')
 	token = config.get(token_names[token_count],'access_token')
 	date = date.today()
-	directory = 'data/users_followed_by/'+str(date)
+	directory = 'data/users_followed_by'
 	if not os.path.exists(directory):
     		os.makedirs(directory)
 
