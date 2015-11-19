@@ -114,12 +114,12 @@ if __name__ == '__main__':
 			if user in selected_users: continue			
 			print 'saving data of user '+ str(user)
 			save_user(user, directory)
-			print 'saving friends of user '+ str(user)
-			save_user_friends(user, directory)
+			#print 'saving friends of user '+ str(user)
+			#save_user_friends(user, directory)
 			print 'saving data of similar user '+ str(similar_user)
 			save_user(similar_user, directory)
-			print 'saving friends of similar user '+ str(similar_user)
-			save_user_friends(similar_user, directory)
+			#print 'saving friends of similar user '+ str(similar_user)
+			#save_user_friends(similar_user, directory)
 			selected_users[user] = similar_user
 			with open(selected_users_file, 'a') as mapped_users_file:
 				mapped_users_file.write('\n'+str(user) + ' ' + str(similar_user))

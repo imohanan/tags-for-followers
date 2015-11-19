@@ -14,7 +14,7 @@ def recent_media(tags):
     			os.makedirs('data/recent_media/'+tag)
 		count = 0
 		next_url = 'https://api.instagram.com/v1/tags/'+tag+'/media/recent?access_token='+config.get('UserDetails','access_token')
-		while( count < 150):
+		while( count < 600):
 			count += 1
 			file_name = 'data/recent_media/'+tag+"/"+"10.23_"+str(count)+'.json'
 			url = next_url
@@ -31,9 +31,9 @@ def recent_media(tags):
 			url_result = re.search(reg_exp, result)
 			next_url =  url_result.group(1)	
 
-			time.sleep(1)
+			time.sleep(0.1)
 	#print result
 
 if __name__ == '__main__':
-	tags = ['followme']#,, , 'followme', 'follow4follow', 'like4like', 'spam4spam']
+	tags = ['followme']# 'follow4follow', 
 	recent_media(tags)
