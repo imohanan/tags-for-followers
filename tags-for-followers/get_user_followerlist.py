@@ -62,7 +62,7 @@ def save_user(user_id, directory):
 			print 'exception ' + str(e)
 			if e.code == 429:
 				if last_seen_exception == None	: last_seen_exception = time.time()
-				elif time.time() - last_seen_exception < 5: raise Exception('API limit reached')
+				elif time.time() - last_seen_exception < 1: raise Exception('API limit reached')
 				else: last_seen_exception = time.time()
 				print 'using next token'
 				token_count = (token_count+1)%len(token_names)
