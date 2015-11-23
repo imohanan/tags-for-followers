@@ -6,18 +6,35 @@ import urllib
 import os
 from termcolor import colored
 
+
+def diffInFollowerCount(userId, startDate, endDate, typeOfUser):
+    inputDir = 'data/users/daily_user_info/'+ typeOfUser
+    if userId in os.listdir(inputDir):
+        try:
+            with open(inputDir + "/" + str(userId)+"/"+str(startDate) + ".json" ) as inputFile:
+                userData1 = json.load(inputFile)
+            with open(inputDir + "/" + str(userId)+"/"+str(endDate) + ".json" ) as inputFile:
+                userData2 = json.load(inputFile)
+            return userData2["counts"]["followed_by"] - userData1["counts"]["followed_by"]
+        except:
+            print(colored("For DIFF: unable to open the file for user "+ str(userId), "yellow"))
+            return None
+    return None
+
+
 def writeFeaturesToFile(userId, dataCollectionDate, typeOfUser, outputFile):
 
     SEPARATOR = " , "
-    userFeatures = getRequiredUserData(userId, dataCollectionDate, typeOfUser)
-    if userFeatures != None:
-        mediaFeatures = list()#TODO : add call to the media features function here
-        if mediaFeatures != None:
-            userFeatures.extend(mediaFeatures)
-            print(userFeatures)
-            featuresStr = SEPARATOR.join(userFeatures)
-            print(featuresStr)
-            outputFile.write(featuresStr + "\n")
+    followerCountDiff = diffInFollowerCount(userId, "11-09-15", "11-21-15", typeOfUser)
+    if followerCountDiff != None:
+        userFeatures = getRequiredUserData(userId, dataCollectionDate, typeOfUser)
+        if userFeatures != None:
+            mediaFeatures = list()#TODO : add call to the media features function here
+            if mediaFeatures != None:
+                userFeatures.extend(mediaFeatures)
+                userFeatures.append(str(followerCountDiff))
+                featuresStr = SEPARATOR.join(userFeatures)
+                outputFile.write(featuresStr + "\n")
 
 def generateCSV(usermap,dataCollectionDate, modeOfWriting):
 
@@ -69,7 +86,7 @@ def getRequiredUserData(userId, dateOfDataCollection, typeOfUser):
 
         bioHasUrl = "False"
         if "www." in userData["bio"] or "http:" in userData["bio"]:
-            print("Contains url" + user_id + " with bio " + userData["bio"])
+            # print("Contains url" + user_id + " with bio " + userData["bio"])
             bioHasUrl = "True"
 
         hasWebsite = "False"
@@ -80,9 +97,7 @@ def getRequiredUserData(userId, dateOfDataCollection, typeOfUser):
 
 
         listOfData = [str(user_id), str(username), str(counts["followed_by"]), str(counts["follows"]), str(counts["media"]), hasProfilePicture, hasWebsite, bioHasUrl, str(fullNameLength)]
-        print(userData)
-        print("&&&&")
-        print(listOfData)
+        
     else:
         print(colored("User info not found in db " + userId, "red"))
         return None
