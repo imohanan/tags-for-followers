@@ -1,10 +1,11 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-import json, datetime, time, re
+import json, datetime, time, re, csv
 import ConfigParser
 import urllib
 import os
 from termcolor import colored
+import media_info_extractor
 
 
 def diffInFollowerCount(userId, startDate, endDate, typeOfUser):
@@ -22,19 +23,17 @@ def diffInFollowerCount(userId, startDate, endDate, typeOfUser):
     return None
 
 
-def writeFeaturesToFile(userId, dataCollectionDate, typeOfUser, outputFile):
+def writeFeaturesToFile(userId, dataCollectionDate, typeOfUser, writer):
 
-    SEPARATOR = " , "
     followerCountDiff = diffInFollowerCount(userId, "11-09-15", "11-21-15", typeOfUser)
     if followerCountDiff != None:
         userFeatures = getRequiredUserData(userId, dataCollectionDate, typeOfUser)
         if userFeatures != None:
-            mediaFeatures = list()#TODO : add call to the media features function here
+            mediaFeatures = media_info_extractor.create_csv_data(userId)
             if mediaFeatures != None:
                 userFeatures.extend(mediaFeatures)
-                userFeatures.append(str(followerCountDiff))
-                featuresStr = SEPARATOR.join(userFeatures)
-                outputFile.write(featuresStr + "\n")
+                userFeatures.append(followerCountDiff)
+                writer.writerow(userFeatures)
 
 def generateCSV(usermap,dataCollectionDate, modeOfWriting):
 
@@ -52,9 +51,10 @@ def generateCSV(usermap,dataCollectionDate, modeOfWriting):
         os.makedirs(outputDirSimilarUsers)
     with open(outputDir + "/" +outputFileName, modeOfWriting) as outputFile:
         with open(outputDirSimilarUsers + "/" +outputFileName, modeOfWriting) as outputFileSimilarUsers:
+            writer = csv.writer(outputFile, delimiter=',')
             for key in userMap:
-                writeFeaturesToFile(key,dataCollectionDate, "original_users", outputFile)
-                writeFeaturesToFile(userMap[key], dataCollectionDate, "similar_users", outputFileSimilarUsers)
+                writeFeaturesToFile(key,dataCollectionDate, "original_users", writer)
+                #writeFeaturesToFile(userMap[key], dataCollectionDate, "similar_users", outputFileSimilarUsers)
                 
 
 
@@ -108,8 +108,8 @@ def getRequiredUserData(userId, dateOfDataCollection, typeOfUser):
 
 
 if __name__ == "__main__":
-    generateCSV("users_map1", "11-09-15", "w")
-    generateCSV("users_map2","11-09-15", "a+")
+    generateCSV("users_map1", "11-09-15", "wb")
+    generateCSV("users_map2","11-09-15", "ab+")
     print("DONE")
 
 

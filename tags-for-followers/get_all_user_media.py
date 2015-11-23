@@ -5,7 +5,7 @@ import re, os, sys
 import time, datetime
 import json
 
-NO_OF_DAYS = 20
+NO_OF_DAYS = 25
 
 def get_user_media(user_id, config, directory):
     count = 0
@@ -23,6 +23,8 @@ def get_user_media(user_id, config, directory):
             exit()
 
         done = False
+        if "data" not in json_data:
+            return 1
         for data_item in json_data["data"]:
             created_date = datetime.datetime.fromtimestamp(int(data_item["created_time"]))
             delta = today - created_date;
@@ -63,9 +65,12 @@ if __name__ == '__main__':
     user_mapping_file = open('data/mappings/user_mapping/users_map.json', 'r')
     data = json.loads(user_mapping_file.readline())
     user_ids = data.keys()
-    user_ids.extend(data.values())
+    #user_ids.extend(data.values())
+    counter = 1
     for user_id in user_ids:
         if user_id not in already_collected_id_list:
+            print "Processed: " + str(counter)
+            counter += 1
             status = get_user_media(user_id, config, directory)
             if status == 1:
                 already_collected_file.write(user_id + "\n")
