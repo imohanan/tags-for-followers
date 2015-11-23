@@ -7,6 +7,10 @@ import os
 from termcolor import colored
 import media_info_extractor
 
+columns = ["userId", "usernameLength","followedBy", "follows", "mediaCount", "hasWebsite", "bioHasUrl", "fullNameLength"]
+
+def getHeaders():
+    return columns
 
 def diffInFollowerCount(userId, startDate, endDate, typeOfUser):
     inputDir = 'data/users/daily_user_info/'+ typeOfUser
@@ -36,7 +40,6 @@ def writeFeaturesToFile(userId, dataCollectionDate, typeOfUser, writer):
                 writer.writerow(userFeatures)
 
 def generateCSV(usermap,dataCollectionDate, modeOfWriting):
-
     inputFileName1 = "data/mappings/user_mapping/"+ usermap +".json"
     inputFileName2 = "data/mappings/user_mapping/"+usermap+".json"
     outputFileName = 'features.csv'
@@ -52,16 +55,15 @@ def generateCSV(usermap,dataCollectionDate, modeOfWriting):
     with open(outputDir + "/" +outputFileName, modeOfWriting) as outputFile:
         with open(outputDirSimilarUsers + "/" +outputFileName, modeOfWriting) as outputFileSimilarUsers:
             writer = csv.writer(outputFile, delimiter=',')
+            if modeOfWriting == "wb":
+                userHeaders = getHeaders()
+                userHeaders.extend(media_info_extractor.get_headers())
+                userHeaders.append("diffInFollowerCount")
+                writer.writerow(userHeaders)
             for key in userMap:
                 writeFeaturesToFile(key,dataCollectionDate, "original_users", writer)
                 #writeFeaturesToFile(userMap[key], dataCollectionDate, "similar_users", outputFileSimilarUsers)
                 
-
-
-    
-
-
-
 def getRequiredUserData(userId, dateOfDataCollection, typeOfUser):
     listOfData = None
     inputDir = 'data/users/daily_user_info/'+ typeOfUser
@@ -79,24 +81,24 @@ def getRequiredUserData(userId, dateOfDataCollection, typeOfUser):
 
         counts = userData["counts"]
 
-        hasProfilePicture = "True"
-        if userData["profile_picture"] == None:
-            print("found someone without profile picture!!! :)")
-            hasProfilePicture = "False"
+        # hasProfilePicture = 1
+        # if userData["profile_picture"] == None:
+        #     print("found someone without profile picture!!! :)")
+        #     hasProfilePicture = 0
 
-        bioHasUrl = "False"
+        bioHasUrl = 0
         if "www." in userData["bio"] or "http:" in userData["bio"]:
             # print("Contains url" + user_id + " with bio " + userData["bio"])
-            bioHasUrl = "True"
+            bioHasUrl = 1
 
-        hasWebsite = "False"
-        if userData["website"] != None:
-            hasWebsite = "True"
+        hasWebsite = 0
+        if userData["website"] != None and userData["website"] != "":
+            hasWebsite = 1
 
         fullNameLength = len(userData["full_name"].split(" "))
 
 
-        listOfData = [str(user_id), str(username), str(counts["followed_by"]), str(counts["follows"]), str(counts["media"]), hasProfilePicture, hasWebsite, bioHasUrl, str(fullNameLength)]
+        listOfData = [str(user_id), str(username), str(counts["followed_by"]), str(counts["follows"]), str(counts["media"]), hasWebsite, bioHasUrl, str(fullNameLength)]
         
     else:
         print(colored("User info not found in db " + userId, "red"))
@@ -108,6 +110,7 @@ def getRequiredUserData(userId, dateOfDataCollection, typeOfUser):
 
 
 if __name__ == "__main__":
+
     generateCSV("users_map1", "11-09-15", "wb")
     generateCSV("users_map2","11-09-15", "ab+")
     print("DONE")
