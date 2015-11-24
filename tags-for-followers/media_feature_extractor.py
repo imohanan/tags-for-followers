@@ -23,6 +23,12 @@ class Media_feature_extractor:
 						user_id = media['user']['id']
 						self.user_media_map[user_id] = media
 
+		self.similar_match_words = ["like", "follo", "spam", "shoutout", "comment", "recent"]
+		self.exact_match_words = []
+		for line in open('follow_tags_list.txt'):
+			self.exact_match_words.append(line.strip())
+
+
 
 	def get_headers():
 		headers = ['NumberOfTags', 'LocationIncluded', 'NumberWordsInCaption', 'NumberOfUsersTagged']	
@@ -37,8 +43,18 @@ class Media_feature_extractor:
 		features.append(len_tags)
 
 		# 2. number of follow tags
+		follow_tag_count = 0
+		for tag in media['tags']:
+			is_follow_tag = False
+			for follow_word in self.exact_match_words:
+				if follow_word == tag:	is_follow_tag = True
+			for follow_word in self.similar_match_words:
+				if follow_word in tag:	is_follow_tag = True
+			if is_follow_tag == True: follow_tag_count += 1
+		features.append(follow_tag_count)
 
 		# 3. percentage of follow tags
+		features.append( float(follow_tag_count) / float( len(media['tags']) ) )
 
 		# 4. location present
 		if 'location' not in media == 0: features.append(0)
@@ -57,6 +73,7 @@ class Media_feature_extractor:
 
 		# filter used for media? 
 		# emoticons in caption
+			
 		# pos in caption
 		# sentiment of caption
 		# number of exclamation marks?
