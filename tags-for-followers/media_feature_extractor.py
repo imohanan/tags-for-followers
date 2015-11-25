@@ -29,12 +29,10 @@ class Media_feature_extractor:
 			self.exact_match_words.append(line.strip())
 		
 	
-
-
-
 	def get_headers(self):
 		headers = ['NumberOfTags', 'LocationIncluded', 'NumberWordsInCaption', 'NumberOfUsersTagged']	
 		return headers
+
 
 	def get_media_details_for_user(self,userId):
 		if userId not in self.user_media_map: return None
@@ -69,7 +67,7 @@ class Media_feature_extractor:
 		else: features.append(1)
 
 		# 5. number of words in caption
-		if 'caption' not in media or'text' not in media['caption']:features.append(0) 
+		if 'caption' not in media or 'text' not in media['caption']:features.append(0) 
 		else:
 			caption = media['caption']['text']
 			words = caption.split()
