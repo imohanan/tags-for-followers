@@ -5,7 +5,7 @@ import ConfigParser
 import urllib
 import os
 from termcolor import colored
-import media_info_extractor
+import media_history_extractor
 from media_feature_extractor import Media_feature_extractor
 
 columns = ["userId", "usernameLength","followedBy", "follows", "mediaCount", "hasWebsite", "bioHasUrl", "fullNameLength"]
@@ -35,9 +35,9 @@ def writeFeaturesToFile(userId, dataCollectionDate, typeOfUser, writer):
     if followerCountDiff != None:
         userFeatures = getRequiredUserData(userId, dataCollectionDate, typeOfUser)
         if userFeatures != None:
-            oldMediaFeatures = media_info_extractor.create_csv_data(userId)
-	    currentMediaFeatures = Media_feature_extractor_obj.get_media_details_for_user(userId)
-            if oldMediaFeatures != None or currentMediaFeatures != None:
+            oldMediaFeatures = media_history_extractor.create_csv_data(userId)
+            currentMediaFeatures = Media_feature_extractor_obj.get_media_details_for_user(userId)
+            if oldMediaFeatures != None and currentMediaFeatures != None:
                 userFeatures.extend(currentMediaFeatures)
                 userFeatures.extend(oldMediaFeatures)
                 userFeatures.append(followerCountDiff)
@@ -63,7 +63,7 @@ def generateCSV(usermap,dataCollectionDate, modeOfWriting):
             if modeOfWriting == "wb":
                 userHeaders = getHeaders()
 		userHeaders.extend(Media_feature_extractor_obj.get_headers())
-                userHeaders.extend(media_info_extractor.get_headers())
+                userHeaders.extend(media_history_extractor.get_headers())
                 userHeaders.append("diffInFollowerCount")
                 writer.writerow(userHeaders)
             for key in userMap:
