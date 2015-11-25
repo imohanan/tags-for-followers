@@ -5,6 +5,11 @@ import os
 class Media_feature_extractor:
 	
 	def __init__(self):
+		self.similar_match_words = ["like", "follo", "spam", "shoutout", "comment", "recent"]
+		self.exact_match_words = []
+		for line in open('follow_tags_list.txt'):
+			self.exact_match_words.append(line.strip())
+
 		self.follow_media_ids = None
 		self.user_media_map = {}
 
@@ -21,23 +26,16 @@ class Media_feature_extractor:
 					for media in data['data']:
 						if media['id'] not in self.follow_media_ids: continue
 						user_id = media['user']['id']
-						self.user_media_map[user_id] = media
+						self.user_media_map[user_id] = self.save_media_features(media)
 
-		self.similar_match_words = ["like", "follo", "spam", "shoutout", "comment", "recent"]
-		self.exact_match_words = []
-		for line in open('follow_tags_list.txt'):
-			self.exact_match_words.append(line.strip())
 		
-	
 	def get_headers(self):
 		headers = ['NumberOfTags', 'NumberOfFollowTags', 'PercentageOfFollowTags', 'LocationIncluded', 'NumberWordsInCaption', 'NumberOfUsersTagged']	
 		return headers
 
 
-	def get_media_details_for_user(self,userId):
-		if userId not in self.user_media_map: return None
+	def save_media_features(self, media):
 		features = []
-		media = self.user_media_map[userId]
 
 		# 1.Number of tags
 		if 'tags' in media: 
@@ -67,7 +65,7 @@ class Media_feature_extractor:
 		else: features.append(1)
 
 		# 5. number of words in caption
-		if 'caption' not in media or 'text' not in media['caption']:features.append(0) 
+		if media['caption'] is None or 'text' not in media['caption']:features.append(0) 
 		else:
 			caption = media['caption']['text']
 			words = caption.split()
@@ -85,6 +83,12 @@ class Media_feature_extractor:
 		# number of exclamation marks?
 		# user has liked
 		return features
+
+
+	def get_media_details_for_user(self,userId):
+		if userId not in self.user_media_map: return None
+		return self.user_media_map[userId]
+
 
 if __name__ == '__main__':
 	media_feature_extractor = Media_feature_extractor()
