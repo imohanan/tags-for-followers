@@ -30,8 +30,9 @@ class Media_feature_extractor:
 
 
 
-	def get_headers():
+	def get_headers(self):
 		headers = ['NumberOfTags', 'LocationIncluded', 'NumberWordsInCaption', 'NumberOfUsersTagged']	
+		return headers
 
 	def get_media_details_for_user(self,userId):
 		if userId not in self.user_media_map: return None
@@ -84,3 +85,4 @@ if __name__ == '__main__':
 	media_feature_extractor = Media_feature_extractor()
 	feature = media_feature_extractor.get_media_details_for_user(str(1499631740))
 	print feature
+	print media_feature_extractor.get_headers()
