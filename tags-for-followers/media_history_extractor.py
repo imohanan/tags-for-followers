@@ -3,7 +3,7 @@ import sys, json, csv, os, datetime
 # TODO: Location, caption, avgTagPopularity, created_time
 columns = ["mediaCount", "tagCount", "commentsCount", "likesCount", "usersInPhotoCount", "userhasLiked"]
 
-initial_date = datetime.datetime(2015, 11, 9)
+initial_date = datetime.datetime(2015, 11, 8)
 
 def get_headers():
     return columns

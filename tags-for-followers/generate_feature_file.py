@@ -118,8 +118,8 @@ def getRequiredUserData(userId, dateOfDataCollection, typeOfUser):
 if __name__ == "__main__":
     global Media_feature_extractor_obj
     Media_feature_extractor_obj = Media_feature_extractor()
-    generateCSV("users_map1", "11-09-15", "wb")
-    generateCSV("users_map2","11-09-15", "ab+")
+    generateCSV("users_map1", "11-08-15", "wb")
+    generateCSV("users_map2","11-08-15", "ab+")
     print("DONE")
 
 
