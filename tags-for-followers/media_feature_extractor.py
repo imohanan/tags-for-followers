@@ -61,8 +61,9 @@ class Media_feature_extractor:
 		else: features.append( float(follow_tag_count) / float( len(media['tags']) ) )
 
 		# 4. location present
-		if 'location' not in media == 0: features.append(0)
-		else: features.append(1)
+		if media['location'] is None: features.append(0)
+		else: 
+			features.append(1)
 
 		# 5. number of words in caption
 		if media['caption'] is None or 'text' not in media['caption']:features.append(0) 
