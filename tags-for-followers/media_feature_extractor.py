@@ -30,7 +30,7 @@ class Media_feature_extractor:
 		
 	
 	def get_headers(self):
-		headers = ['NumberOfTags', 'LocationIncluded', 'NumberWordsInCaption', 'NumberOfUsersTagged']	
+		headers = ['NumberOfTags', 'NumberOfFollowTags', 'PercentageOfFollowTags', 'LocationIncluded', 'NumberWordsInCaption', 'NumberOfUsersTagged']	
 		return headers
 
 
@@ -74,7 +74,7 @@ class Media_feature_extractor:
 			features.append(len(words))
 
 		# 6. number of users
-		if 'users_in _photo' not in media: features.append(0)
+		if 'users_in_photo' not in media: features.append(0)
 		else: features.append(len(media['users_in_photo']))
 
 		# filter used for media? 
