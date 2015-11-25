@@ -27,6 +27,8 @@ class Media_feature_extractor:
 		self.exact_match_words = []
 		for line in open('follow_tags_list.txt'):
 			self.exact_match_words.append(line.strip())
+		
+	
 
 
 
@@ -40,29 +42,34 @@ class Media_feature_extractor:
 		media = self.user_media_map[userId]
 
 		# 1.Number of tags
-		len_tags = len(media['tags'])
-		features.append(len_tags)
+		if 'tags' in media: 
+			len_tags = len(media['tags'])
+			features.append(len_tags)
+		else: features.append(0)
 
 		# 2. number of follow tags
 		follow_tag_count = 0
-		for tag in media['tags']:
-			is_follow_tag = False
-			for follow_word in self.exact_match_words:
-				if follow_word == tag:	is_follow_tag = True
-			for follow_word in self.similar_match_words:
-				if follow_word in tag:	is_follow_tag = True
-			if is_follow_tag == True: follow_tag_count += 1
+		if 'tags' not in media: follow_tag_count = 0
+		else:		
+			for tag in media['tags']:
+				is_follow_tag = False
+				for follow_word in self.exact_match_words:
+					if follow_word == tag:	is_follow_tag = True
+				for follow_word in self.similar_match_words:
+					if follow_word in tag:	is_follow_tag = True
+				if is_follow_tag == True: follow_tag_count += 1
 		features.append(follow_tag_count)
 
 		# 3. percentage of follow tags
-		features.append( float(follow_tag_count) / float( len(media['tags']) ) )
+		if 'tags' not in media: features.append(0)
+		else: features.append( float(follow_tag_count) / float( len(media['tags']) ) )
 
 		# 4. location present
 		if 'location' not in media == 0: features.append(0)
 		else: features.append(1)
 
 		# 5. number of words in caption
-		if 'text' not in media['caption']:features.append(0) 
+		if 'caption' not in media or'text' not in media['caption']:features.append(0) 
 		else:
 			caption = media['caption']['text']
 			words = caption.split()
@@ -70,7 +77,7 @@ class Media_feature_extractor:
 
 		# 6. number of users
 		if 'users_in _photo' not in media: features.append(0)
-		else: features.append(len(media['users_in _photo']))
+		else: features.append(len(media['users_in_photo']))
 
 		# filter used for media? 
 		# emoticons in caption
