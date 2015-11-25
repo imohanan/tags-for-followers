@@ -6,8 +6,10 @@ import urllib
 import os
 from termcolor import colored
 import media_info_extractor
+from media_feature_extractor import Media_feature_extractor
 
 columns = ["userId", "usernameLength","followedBy", "follows", "mediaCount", "hasWebsite", "bioHasUrl", "fullNameLength"]
+Media_feature_extractor_obj = None
 
 def getHeaders():
     return columns
@@ -28,18 +30,21 @@ def diffInFollowerCount(userId, startDate, endDate, typeOfUser):
 
 
 def writeFeaturesToFile(userId, dataCollectionDate, typeOfUser, writer):
-
+    global Media_feature_extractor_obj
     followerCountDiff = diffInFollowerCount(userId, "11-09-15", "11-21-15", typeOfUser)
     if followerCountDiff != None:
         userFeatures = getRequiredUserData(userId, dataCollectionDate, typeOfUser)
         if userFeatures != None:
-            mediaFeatures = media_info_extractor.create_csv_data(userId)
-            if mediaFeatures != None:
-                userFeatures.extend(mediaFeatures)
+            oldMediaFeatures = media_info_extractor.create_csv_data(userId)
+	    currentMediaFeatures = Media_feature_extractor_obj.get_media_details_for_user(userId)
+            if oldMediaFeatures != None or currentMediaFeatures != None:
+                userFeatures.extend(currentMediaFeatures)
+                userFeatures.extend(oldMediaFeatures)
                 userFeatures.append(followerCountDiff)
                 writer.writerow(userFeatures)
 
 def generateCSV(usermap,dataCollectionDate, modeOfWriting):
+    global Media_feature_extractor_obj
     inputFileName1 = "data/mappings/user_mapping/"+ usermap +".json"
     inputFileName2 = "data/mappings/user_mapping/"+usermap+".json"
     outputFileName = 'features.csv'
@@ -57,6 +62,7 @@ def generateCSV(usermap,dataCollectionDate, modeOfWriting):
             writer = csv.writer(outputFile, delimiter=',')
             if modeOfWriting == "wb":
                 userHeaders = getHeaders()
+		userHeaders.extend(Media_feature_extractor_obj.get_headers())
                 userHeaders.extend(media_info_extractor.get_headers())
                 userHeaders.append("diffInFollowerCount")
                 writer.writerow(userHeaders)
@@ -110,7 +116,8 @@ def getRequiredUserData(userId, dateOfDataCollection, typeOfUser):
 
 
 if __name__ == "__main__":
-
+    global Media_feature_extractor_obj
+    Media_feature_extractor_obj = Media_feature_extractor()
     generateCSV("users_map1", "11-09-15", "wb")
     generateCSV("users_map2","11-09-15", "ab+")
     print("DONE")
