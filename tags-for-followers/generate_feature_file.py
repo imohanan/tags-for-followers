@@ -33,7 +33,7 @@ def diffInFollowerCount(userId, startDate, endDate, typeOfUser):
 def getFollowerCountCategory(followerCount): 
     global category_ranges
     for index in range(0, len(category_ranges)):
-	cat_tuple = category_rages[index]
+	cat_tuple = category_ranges[index]
         if followerCount >= cat_tuple[0] and followerCount <= cat_tuple[1]:
    	    return index
     return None
@@ -41,7 +41,8 @@ def getFollowerCountCategory(followerCount):
 
 def writeFeaturesToFile(userId, dataCollectionDate, typeOfUser, writer):
     global Media_feature_extractor_obj
-    followerCountDiff = getFollowerCountCategory(diffInFollowerCount(userId, "11-09-15", "11-21-15", typeOfUser))
+    followerCountDiff = diffInFollowerCount(userId, "11-09-15", "11-21-15", typeOfUser)
+    followerCountDiffCategory = getFollowerCountCategory(diffInFollowerCount(userId, "11-09-15", "11-21-15", typeOfUser))
     if followerCountDiff != None:
         userFeatures = getRequiredUserData(userId, dataCollectionDate, typeOfUser)
         if userFeatures != None:
@@ -51,6 +52,7 @@ def writeFeaturesToFile(userId, dataCollectionDate, typeOfUser, writer):
                 userFeatures.extend(currentMediaFeatures)
                 userFeatures.extend(oldMediaFeatures)
                 userFeatures.append(followerCountDiff)
+		userFeatures.append(followerCountDiffCategory)
                 writer.writerow(userFeatures)
 
 def generateCSV(usermap,dataCollectionDate, modeOfWriting):
@@ -74,7 +76,8 @@ def generateCSV(usermap,dataCollectionDate, modeOfWriting):
                 userHeaders = getHeaders()
 		userHeaders.extend(Media_feature_extractor_obj.get_headers())
                 userHeaders.extend(media_history_extractor.get_headers())
-                userHeaders.append("diffInFollowerCount")
+		userHeaders.append("diffInFollowerCount")
+                userHeaders.append("diffInFollowerCountCategory")
                 writer.writerow(userHeaders)
             for key in userMap:
                 writeFeaturesToFile(key,dataCollectionDate, "original_users", writer)
