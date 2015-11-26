@@ -35,8 +35,7 @@ def getFollowerCountCategory(followerCount):
     for index in range(0, len(category_ranges)):
 	cat_tuple = category_ranges[index]
         if followerCount >= cat_tuple[0] and followerCount <= cat_tuple[1]:
-   	    return index
-    return None
+   	    return str(unichr(ord('A')+index))
 
 
 def writeFeaturesToFile(userId, dataCollectionDate, typeOfUser, writer):
