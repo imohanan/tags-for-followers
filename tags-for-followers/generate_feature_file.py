@@ -10,6 +10,7 @@ from media_feature_extractor import Media_feature_extractor
 
 columns = ["userId", "usernameLength","followedBy", "follows", "mediaCount", "hasWebsite", "bioHasUrl", "fullNameLength"]
 Media_feature_extractor_obj = None
+category_ranges = None
 
 def getHeaders():
     return columns
@@ -29,9 +30,18 @@ def diffInFollowerCount(userId, startDate, endDate, typeOfUser):
     return None
 
 
+def getFollowerCountCategory(followerCount): 
+    global category_ranges
+    for index in range(0, len(category_ranges)):
+	cat_tuple = category_rages[index]
+        if followerCount >= cat_tuple[0] and followerCount <= cat_tuple[1]:
+   	    return index
+    return None
+
+
 def writeFeaturesToFile(userId, dataCollectionDate, typeOfUser, writer):
     global Media_feature_extractor_obj
-    followerCountDiff = diffInFollowerCount(userId, "11-09-15", "11-21-15", typeOfUser)
+    followerCountDiff = getFollowerCountCategory(diffInFollowerCount(userId, "11-09-15", "11-21-15", typeOfUser))
     if followerCountDiff != None:
         userFeatures = getRequiredUserData(userId, dataCollectionDate, typeOfUser)
         if userFeatures != None:
@@ -117,6 +127,8 @@ def getRequiredUserData(userId, dateOfDataCollection, typeOfUser):
 
 if __name__ == "__main__":
     global Media_feature_extractor_obj
+    global category_ranges
+    category_ranges = [(-4440, 0),(1, 7),(8, 19), (20, 70), (71, 123657)]
     Media_feature_extractor_obj = Media_feature_extractor()
     generateCSV("users_map1", "11-08-15", "wb")
     generateCSV("users_map2","11-08-15", "ab+")
