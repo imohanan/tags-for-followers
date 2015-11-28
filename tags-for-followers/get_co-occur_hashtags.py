@@ -18,9 +18,9 @@ def write_to_file(tag_Map, fileName, mediacount):
 				cooccur_file.write(line)
 				cooccur_file.write('\n')
 		except Exception , e:
-			e = ''
-			#print key[0]
+			print key[0]
 	
+
 def plot_graph(fileName, count, titleOfgraph):
 	y_vals= []
 	x_vals = []
